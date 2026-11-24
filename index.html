@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Sonny</title>
+<link rel="icon" href="data:,">
+<style>
+  html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+  #stage { position: fixed; inset: 0; width: 100vw; height: 100vh; display: block; touch-action: none; user-select: none; -webkit-user-select: none; }
+  #loader { position: fixed; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #c8d6c8; font: 14px Verdana, Arial, sans-serif; background: #191919; letter-spacing: 1px; }
+  #loader .bar { width: 260px; height: 6px; background: #333; margin-top: 12px; border-radius: 3px; overflow: hidden; }
+  #loader .fill { height: 100%; width: 0; background: #7fbf6a; transition: width .15s; }
+  #loader .err { color: #f88; margin-top: 12px; max-width: 80vw; text-align: center; }
+  #mute { position: fixed; right: 6px; top: 6px; z-index: 5; width: 24px; height: 24px; padding: 0; border-radius: 12px; border: 0; background: rgba(255,255,255,.12); color: #ddd; font-size: 12px; line-height: 24px; cursor: pointer; opacity: .35; }
+  #mute:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<div id="loader"><div>SONNY &mdash; loading <span id="pct">0%</span></div><div class="bar"><div class="fill" id="fill"></div></div><div class="err" id="err"></div></div>
+<button id="mute" title="Mute / unmute">&#128266;</button>
+<script src="game/engine/as2.js"></script>
+<script src="game/engine/display.js"></script>
+<script src="game/engine/text.js"></script>
+<script src="game/engine/render.js"></script>
+<script src="game/engine/audio.js"></script>
+<script src="game/engine/player.js"></script>
+<script src="game/js/scripts.js"></script>
+<script>
+(async function () {
+  'use strict';
+  const BASE = 'game/';
+  const pct = document.getElementById('pct'), fill = document.getElementById('fill'), err = document.getElementById('err');
+  const setP = (p) => { const v = Math.round(p * 100) + '%'; pct.textContent = v; fill.style.width = v; };
+  try {
+    const movie = await (await fetch(BASE + 'data/movie.json')).json();
+    setP(0.1);
+    F.audio.init(movie.chars);
+    const entries = Object.entries(movie.chars);
+    const imgs = entries.filter(([, c]) => c.t === 'bitmap');
+    const snds = entries.filter(([, c]) => c.t === 'sound').concat(entries.filter(([, c]) => c.stream).map(([id, c]) => ['stream:' + id, c.stream]));
+    const total = imgs.length + snds.length; let done = 0;
+    const tick = () => setP(0.1 + 0.9 * (++done / Math.max(1, total)));
+    await Promise.all(imgs.map(([id, c]) => new Promise((res) => {
+      const im = new Image();
+      im.onload = () => { F.render.images[id] = im; tick(); res(); };
+      im.onerror = () => { tick(); res(); };
+      im.src = BASE + c.src;
+    })));
+    let next = 0;
+    const worker = async () => {
+      while (next < snds.length) {
+        const [id, c] = snds[next++];
+        try { const r = await fetch(BASE + c.src); if (r.ok) F.audio.provide(id, await r.arrayBuffer()); } catch (e) { }
+        tick();
+      }
+    };
+    await Promise.all([worker(), worker(), worker(), worker(), worker(), worker()]);
+    document.getElementById('loader').remove();
+    const canvas = document.getElementById('stage');
+    // The preloader's ad slot can't load anymore: also hide its black backing panel and outline.
+    F.onBlockedLoad = (clip) => {
+      const p = clip._parent; if (!p || !p.$sorted) return;
+      const near = (a, b) => Math.abs(a - b) < 3;
+      for (const s of p.$sorted()) {
+        if (s === clip || s.$.depth >= clip.$.depth + 3) continue;
+        const c = F.player.chars[s.$.id], b = c && c.t === 'shape' && c.b;
+        if ((s.$.depth < clip.$.depth && near(s._x, clip._x) && near(s._y, clip._y)) || (b && near(b[0], clip._x) && near(b[1], clip._y) && near(b[2] - b[0], 301))) s._visible = false;
+      }
+    };
+    const player = new F.Player(movie, SWF_SCRIPTS, canvas);
+    window.player = player;
+    player.start();
+    F.audio.decodeAll();
+    const mute = document.getElementById('mute');
+    const setMute = (m) => { F.audio.setMuted(m); mute.innerHTML = m ? '&#128263;' : '&#128266;'; try { localStorage.setItem('sonny.muted', m ? '1' : '0'); } catch (e) { } };
+    setMute(localStorage.getItem('sonny.muted') === '1');
+    mute.addEventListener('click', (e) => { e.stopPropagation(); setMute(!F.audio.muted); F.audio.resume(); canvas.focus(); });
+    const resume = () => F.audio.resume();
+    window.addEventListener('pointerdown', resume, true);
+    window.addEventListener('keydown', resume, true);
+  } catch (e) {
+    console.error(e);
+    err.textContent = 'Failed to load: ' + (e && e.message || e);
+  }
+})();
+</script>
+</body>
+</html>
