@@ -3347,8 +3347,83 @@ if (Krin?.graphics) {
  $$o(KrinSettings).QUALITY = "HIGH";
 }
 turnBasedKrin = true;
+$$o(_root).barSlot = [1, 3, 5];
+$$o(_root).barSlotB = [2, 4, 6];
+$$o(_root).barSlotBack = [7, 9, 0];
+$$o(_root).barSlotBBack = [8, 10, 0];
+$$o(_root).barShowingBack = false;
+krinBarIndex = function (PWLCX) {
+ var bi = 0;
+ while (bi < 3) {
+  if (_root?.barSlot?.[bi] == PWLCX) {
+   return bi + 1;
+  }
+  if (_root?.barSlotB?.[bi] == PWLCX) {
+   return bi + 4;
+  }
+  bi++;
+ }
+ return 0;
+};
+krinBarRefresh = function () {
+ var bi = 0;
+ while (bi < 3) {
+  var as = _root?.barSlot?.[bi];
+  var es = _root?.barSlotB?.[bi];
+  if (as == 0 || _root?.[$$add("playerKrin", as)]?.active != true) {
+   $$o(_root?.[$$add($$add("p", bi + 1), "BAR")])._visible = false;
+  } else {
+   $$o(_root?.[$$add($$add("p", bi + 1), "BAR")])._visible = true;
+   _root?.lifeBarUpdate?.(as);
+  }
+  if (es == 0 || _root?.[$$add("playerKrin", es)]?.active != true) {
+   $$o(_root?.[$$add($$add("p", bi + 4), "BAR")])._visible = false;
+  } else {
+   $$o(_root?.[$$add($$add("p", bi + 4), "BAR")])._visible = true;
+   _root?.lifeBarUpdate?.(es);
+  }
+  bi++;
+ }
+};
+krinBarToggle = function () {
+ if (_root?.[$$add("playerKrin", 7)]?.active != true && _root?.[$$add("playerKrin", 9)]?.active != true && _root?.[$$add("playerKrin", 8)]?.active != true && _root?.[$$add("playerKrin", 10)]?.active != true) {
+  return;
+ }
+ if (_root?.barShowingBack) {
+  $$o(_root).barShowingBack = false;
+  $$o(_root).barSlot = [1, 3, 5];
+  $$o(_root).barSlotB = [2, 4, 6];
+ } else {
+  $$o(_root).barShowingBack = true;
+  $$o(_root).barSlot = [7, 9, 0];
+  $$o(_root).barSlotB = [8, 10, 0];
+ }
+ _root?.krinBarRefresh?.();
+};
+krinSelectorHover = function () {
+ var si = 1;
+ while (si < 11) {
+  sc = _root?.[$$add("KrinSelector", si)];
+  if (sc != undefined) {
+   if (_root?.BATTLESCREEN?.[$$add("player", si)]?.hitTest?.(_root?._xmouse, _root?._ymouse)) {
+    if (sc._alpha < 100 && _root?.InBattle == false) {
+     $$o(sc)._alpha = $$add(sc._alpha, 20);
+    }
+    $$o(_root?.hitTarget)[si - 1] = 1;
+    $$o(_root).HTX = sc._x;
+    $$o(_root).HTY = sc._y;
+   } else {
+    if (sc._alpha > 0) {
+     $$o(sc)._alpha = sc._alpha - 5;
+    }
+    $$o(_root?.hitTarget)[si - 1] = 0;
+   }
+  }
+  si++;
+ }
+};
 i = 1;
-while (i < 7) {
+while (i < 11) {
  $$o(_root)[$$add("playerKrin", i)] = new Object();
  $$o(_root?.[$$add("playerKrin", i)]).active = false;
  $$o(_root?.[$$add("playerKrin", i)]).AION = false;
@@ -3368,7 +3443,7 @@ $$o(Krin).MAGIC = $$add(_root?.Krin?.[$$add("StatSets", _root?.Krin?.MenuPlayerS
 $$o(Krin).SPEED = $$add(_root?.Krin?.[$$add("StatSets", _root?.Krin?.MenuPlayerSelect)]?.[3], Math?.ceil?.($$add(_root?.[$$add("KNU", _root?.Krin?.ClassStats?.[_root?.Krin?.MenuPlayerSelect])]?.[7], _root?.[$$add("KNU", _root?.Krin?.ClassStats?.[_root?.Krin?.MenuPlayerSelect])]?.[8] * _root?.Krin?.LevelStats?.[_root?.Krin?.MenuPlayerSelect])));
 $$o(Krin).FOCUS = $$add(_root?.Krin?.[$$add("StatSets", _root?.Krin?.MenuPlayerSelect)]?.[4], Math?.ceil?.(_root?.[$$add("KNU", _root?.Krin?.ClassStats?.[_root?.Krin?.MenuPlayerSelect])]?.[9]));
 i = 1;
-while (i < 7) {
+while (i < 11) {
  $$o(_root)[$$add("playerKrin", i)] = new Object();
  shtName = _root?.[$$add("playerKrin", i)];
  $$o(shtName).active = false;
@@ -3641,8 +3716,18 @@ TeamSelect = function TeamSelect() {
 };
 stop?.();
 $$o(Krin).player = _root?.[$$add("playerKrin", Krin?.playerNumber)];
+i = 7;
+while (i < 11) {
+ sN = i - 6;
+ dirN = _root?.BATTLESCREEN?.[$$add("player", sN)]?._x < 300 ? -62 : 62;
+ _root?.BATTLESCREEN?.createEmptyMovieClip?.($$add("player", i), $$add(i, 20));
+ $$o(_root?.BATTLESCREEN?.[$$add("player", i)])._x = $$add(_root?.BATTLESCREEN?.[$$add("player", sN)]?._x, dirN);
+ $$o(_root?.BATTLESCREEN?.[$$add("player", i)])._y = $$add(_root?.BATTLESCREEN?.[$$add("player", sN)]?._y, -26);
+ _root?.createEmptyMovieClip?.($$add("KrinSelector", i), $$add(i, 200));
+ i++;
+}
 i = 1;
-while (i < 7) {
+while (i < 11) {
  if (_root?.[$$add("playerKrin", i)]?.active == false) {
   $$o(BATTLESCREEN?.[$$add("player", i)])._visible = false;
  } else {
@@ -3670,7 +3755,7 @@ while (i < 7) {
 }
 $$o(_root).healedThisTurn = new Array();
 i = 1;
-while (i < 7) {
+while (i < 11) {
  $$o(_root?.healedThisTurn)[i] = 0;
  i++;
 }
@@ -3680,7 +3765,7 @@ $$o(Krin).EnemyXP3 = 0;
 goodSelect = 3;
 badSelect = 2;
 i = 1;
-while (i < 7) {
+while (i < 11) {
  if (_root?.[$$add("playerKrin", i)]?.active == true) {
   if (_root?.[$$add("playerKrin", i)]?.teamSide == Krin?.player?.teamSide) {
    if (_root?.[$$add("playerKrin", i)] == Krin?.player) {
@@ -3742,6 +3827,14 @@ TeamSpeedAdder = function () {
   id: 5,
   speed: _root?.playerKrin5?.SPEEDU
  });
+ _loc2_?.push?.({
+  id: 7,
+  speed: _root?.playerKrin7?.SPEEDU
+ });
+ _loc2_?.push?.({
+  id: 9,
+  speed: _root?.playerKrin9?.SPEEDU
+ });
  _loc2_?.sortOn?.(["speed", "id"], [Array?.DESCENDING | Array?.NUMERIC, Array?.DESCENDING | Array?.NUMERIC]);
  $$o(_root?.[$$add("playerKrin", _loc2_?.[0]?.id)]).teamAdder = 0;
  $$o(_root?.[$$add("playerKrin", _loc2_?.[1]?.id)]).teamAdder = 1;
@@ -3759,13 +3852,21 @@ TeamSpeedAdder = function () {
   id: 6,
   speed: _root?.playerKrin6?.SPEEDU
  });
+ _loc3_?.push?.({
+  id: 8,
+  speed: _root?.playerKrin8?.SPEEDU
+ });
+ _loc3_?.push?.({
+  id: 10,
+  speed: _root?.playerKrin10?.SPEEDU
+ });
  _loc3_?.sortOn?.(["speed", "id"], [Array?.DESCENDING | Array?.NUMERIC, Array?.DESCENDING | Array?.NUMERIC]);
  $$o(_root?.[$$add("playerKrin", _loc3_?.[0]?.id)]).teamAdder = 0;
  $$o(_root?.[$$add("playerKrin", _loc3_?.[1]?.id)]).teamAdder = 1;
  $$o(_root?.[$$add("playerKrin", _loc3_?.[2]?.id)]).teamAdder = 2;
  $$o(_root).AITeamMoveOrder = new Array();
  i = 0;
- while (i < 3) {
+ while (i < 5) {
   $$o(_root?.AITeamMoveOrder)[$$add(i, s1tm)] = _loc2_?.[i]?.id;
   $$o(_root?.AITeamMoveOrder)[$$add(i, s2tm)] = _loc3_?.[i]?.id;
   i++;
@@ -3774,7 +3875,7 @@ TeamSpeedAdder = function () {
 TeamSelect?.();
 PrevTeam = TeamMove;
 i = 1;
-while (i < 7) {
+while (i < 11) {
  krinAddMove?.(i, i, 0);
  i++;
 }
@@ -3783,7 +3884,7 @@ while (i < 7) {
 menuMode = false;
 hitTarget = new Array();
 i = 0;
-while (i < 6) {
+while (i < 10) {
  $$o(hitTarget)[i] = 0;
  i++;
 }
@@ -7124,7 +7225,7 @@ executeMove = function (IDKM, IDKM2, IDKC, IDKT) {
      _root?.BATTLESCREEN?.[$$add("player", IDKT?.playerID)]?.inner?.gotoAndPlay?.("dead");
      $$o(IDKT).active = false;
      wefvergrervw = 1;
-     while (wefvergrervw < 7) {
+     while (wefvergrervw < 11) {
       if (IDKT?.playerID == _root?.Krin?.playerNumber) {
        $$o(_root?.[$$add("KrinSelector", wefvergrervw)])._x = -300;
        $$o(_root?.[$$add("KrinSelector", wefvergrervw)])._y = -300;
@@ -7198,7 +7299,7 @@ executeMove = function (IDKM, IDKM2, IDKC, IDKT) {
      _root?.BATTLESCREEN?.[$$add("player", IDKT?.playerID)]?.inner?.gotoAndPlay?.("dead");
      $$o(IDKT).active = false;
      wefvergrervw = 1;
-     while (wefvergrervw < 7) {
+     while (wefvergrervw < 11) {
       if (IDKT?.playerID == _root?.Krin?.playerNumber) {
        $$o(_root?.[$$add("KrinSelector", wefvergrervw)])._x = -300;
        $$o(_root?.[$$add("KrinSelector", wefvergrervw)])._y = -300;
@@ -7242,6 +7343,10 @@ BarHolder2 = new Array();
 BarHolder3 = new Array();
 BarHolder4 = new Array();
 lifeBarUpdate = function (PWLC) {
+ PWLC2 = _root?.krinBarIndex?.(PWLC);
+ if (PWLC2 == 0 || PWLC2 == undefined) {
+  return;
+ }
  ghjul = _root?.[$$add("playerKrin", PWLC)];
  $$o(_root?.[$$add($$add("p", PWLC), "BAR")]?.inner).lifeNow = ghjul?.LIFEN;
  $$o(_root?.[$$add($$add("p", PWLC), "BAR")]?.inner).lifeMax = ghjul?.LIFEU;
@@ -9040,8 +9145,8 @@ rengi?.speeches?.push?.({
 rengi?.speeches?.sortOn?.([turnTime, turnTime2], Array?.NUMERIC);
 sayBayK = _root?.KrinLang?.[KLangChoosen]?.BATTLESPEECH;
 createNewBattle?.();
-$$o(rengi).players = [6, 0, 0, 7, 0];
-$$o(rengi).playersLevels = [1, 0, 0, 99, 0];
+$$o(rengi).players = [6, 0, 0, 7, 0, 7, 8, 7, 8];
+$$o(rengi).playersLevels = [1, 0, 0, 99, 0, 99, 1, 99, 1];
 rengi?.speeches?.push?.({
  player: 5,
  turnTime: 0,
@@ -11325,6 +11430,8 @@ $$o(Krin).hairArray = ["", "ONE", "TWO", "THREE", "FOUR", "FIVE", "SIX"];
 $$o(Krin).gArray = ["M", "F"];
 $$o(Krin).friendArrayX = new Array();
 $$o(Krin).friendArrayX = [1, 2];
+$$o(Krin?.friendArrayX)[-1] = 3;
+$$o(Krin?.friendArrayX)[-2] = 4;
 $$o(Krin).skinSetArray = new Array();
 $$o(Krin).agMode = new Array();
 i = 0;
@@ -12182,6 +12289,15 @@ if (timerWait > 0) {
  timerWait--;
 }
 _root?.KrinToolTipper?.play?.();
+_root?.krinSelectorHover?.();
+if (Key?.isDown?.(16)) {
+ if (_root?.arrowHeld != true) {
+  $$o(_root).arrowHeld = true;
+  _root?.krinBarToggle?.();
+ }
+} else {
+ $$o(_root).arrowHeld = false;
+}
 if (_root?.InBattle) {
  if (_root?.BAMBAMBAM) {
   $$o(_root).BAMBAMBAM = false;
@@ -12280,26 +12396,18 @@ if (_root?.InBattle) {
      loseCon++;
     }
    }
-   if (_root?.playerKrin1?.active == false) {
-    if (_root?.playerKrin3?.active == false) {
-     if (_root?.playerKrin5?.active == false) {
-      if (_root?.[$$add("playerKrin", _root?.Krin?.playerNumber)]?.teamSide == 1) {
-       loseCon++;
-      } else {
-       winCon++;
-      }
-     }
+   if (_root?.playerKrin1?.active == false && _root?.playerKrin3?.active == false && _root?.playerKrin5?.active == false && _root?.playerKrin7?.active == false && _root?.playerKrin9?.active == false) {
+    if (_root?.[$$add("playerKrin", _root?.Krin?.playerNumber)]?.teamSide == 1) {
+     loseCon++;
+    } else {
+     winCon++;
     }
    }
-   if (_root?.playerKrin2?.active == false) {
-    if (_root?.playerKrin4?.active == false) {
-     if (_root?.playerKrin6?.active == false) {
-      if (_root?.[$$add("playerKrin", _root?.Krin?.playerNumber)]?.teamSide == 2) {
-       loseCon++;
-      } else {
-       winCon++;
-      }
-     }
+   if (_root?.playerKrin2?.active == false && _root?.playerKrin4?.active == false && _root?.playerKrin6?.active == false && _root?.playerKrin8?.active == false && _root?.playerKrin10?.active == false) {
+    if (_root?.[$$add("playerKrin", _root?.Krin?.playerNumber)]?.teamSide == 2) {
+     loseCon++;
+    } else {
+     winCon++;
     }
    }
    if (winCon) {
@@ -12666,7 +12774,7 @@ if (_root?.InBattle == false && timerWait == 0 && _root?.winCondition < 0) {
     $$o(_root?.krinToMove).toolTip = _root?.krinToMove?.thinger4;
    }
    u = 0;
-   while (u < 6) {
+   while (u < 10) {
     $$o(_root?.[$$add("KrinSelector", $$add(u, 1))])._visible = true;
     u++;
    }
@@ -12687,7 +12795,7 @@ if (_root?.InBattle == false && timerWait == 0 && _root?.winCondition < 0) {
    $$o(_root).nextPlayer = true;
    $$o(_root?.selector)._visible = false;
    i = 0;
-   while (i < 6) {
+   while (i < 10) {
     $$o(_root?.[$$add("KrinSelector", $$add(i, 1))])._visible = false;
     i++;
    }
@@ -12760,15 +12868,14 @@ if (_root?.[$$add("playerKrin", _root?.Krin?.playerNumber)]?.teamSide == _root?.
 }
 $$o(_root).firstUpdate = true;
 i = 1;
-while (i < 7) {
+while (i < 11) {
  if (_root?.[$$add("playerKrin", i)]?.active) {
   _root?.lifeBarUpdate?.(i);
- } else {
-  $$o(_root?.[$$add($$add("p", i), "BAR")])._visible = false;
  }
  i++;
 }
 $$o(_root).firstUpdate = false;
+_root?.krinBarRefresh?.();
 }}},
 "0:211:537":{"enterFrame":function(__s){with(__s){
 if (eivwienviwenvie) {
