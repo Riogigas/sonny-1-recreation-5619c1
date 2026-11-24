@@ -5908,14 +5908,14 @@ onEnterFrame = function () {
 }},
 "0:61:1":function(__s){with(__s){
 expWorkOut = function (enemyXP, yourXP) {
- $$o(Krin).diffXP = $$add(1, (enemyXP - yourXP) * 0.15);
- if (Krin?.diffXP < 0) {
-  $$o(Krin).diffXP = 0;
- }
- if (Krin?.diffXP > 3) {
-  $$o(Krin).diffXP = 3;
- }
- $$o(Krin).totalXP = Krin?.diffXP * (100 / $$add(1, Math?.pow?.(yourXP, $$add(0.6, 0.3 * (yourXP / 100)))));
+  $$o(Krin).diffXP = $$add(1, (enemyXP - yourXP) * 0.15);
+  if (Krin?.diffXP < 0) {
+    $$o(Krin).diffXP = 0;
+  }
+  if (Krin?.diffXP > 3) {
+    $$o(Krin).diffXP = 3;
+  }
+  $$o(Krin).totalXP = Krin?.diffXP * (100 / $$add(1, Math.pow(yourXP, $$add(0.6, 0.3 * (yourXP / 100))))) * (_root?.coopExpMult ?? 1);
 };
 }},
 "0:61:2":function(__s){with(__s){
@@ -8380,6 +8380,12 @@ createNewUnitKrin = function (a, b, c, d, e, f, g, h, i, j) {
  $$o(_root?.[$$add("KNU", createUnitKrinCount)])[8] = i;
  $$o(_root?.[$$add("KNU", createUnitKrinCount)])[9] = j;
  jesivie = _root?.[$$add("KNU", createUnitKrinCount)];
+ if (_root?.enemyHpMult > 1) {
+  $$o(jesivie)[1] = $$o(jesivie)[1] * _root.enemyHpMult;
+ }
+ if (_root?.enemyFocusMult > 1) {
+  $$o(jesivie)[9] = $$o(jesivie)[9] * _root.enemyFocusMult;
+ }
  $$o(_root?.[$$add("KNU", createUnitKrinCount)]).model = new Array();
  $$o(_root?.[$$add("KNU", createUnitKrinCount)]).equipment = new Array();
  $$o(_root?.[$$add("KNU", createUnitKrinCount)]).model = ["MODEL1", "ONE", "ONE", "M"];
@@ -11702,8 +11708,8 @@ if (prx != undefined) {
    bar?.gotoAndStop?.("level");
    $$o(bar)._width = 95.10000000000001;
    levelI = $$add(_root?.KrinLang?.[_root?.KLangChoosen]?.MENU?.[0], _root?.Krin?.LevelStats?.[prx]);
-   $$o(_root?.Krin).skillPoints++;
-   $$o(_root?.Krin).statPoints++;
+   $$o(_root?.Krin).skillPoints += 3;
+$$o(_root?.Krin).statPoints += 3;
   }
  } else {
   $$o(_root?.Krin?.ExpSets)[prx] = exp;
@@ -13652,8 +13658,8 @@ if (_root?.Krin?.PauseForScreen != true) {
   }
   $$o(_root?.Krin).respecSet--;
   $$o(_root?.Krin).lastDay2 = _root?.dayNow;
-  $$o(_root?.Krin).skillPoints = _root?.Krin?.Level - 1;
-  $$o(_root?.Krin).statPoints = _root?.Krin?.Level - 1;
+  $$o(_root?.Krin).skillPoints = (_root?.Krin?.Level - 1) * 3;
+$$o(_root?.Krin).statPoints = (_root?.Krin?.Level - 1) * 3;
   $$o(KRINMENU).skillPoints = _root?.Krin?.skillPoints;
   $$o(KRINMENU).statPoints = _root?.Krin?.statPoints;
   $$o(Krin).moveMatrix = new Array();
