@@ -10544,7 +10544,7 @@ $$o(Krin?.PIU)[4] = 15;
 $$o(Krin?.PIU)[5] = 15;
 $$o(Krin?.PIU)[6] = 15;
 $$o(Krin?.PIU)[7] = 15;
-createNewItemKrin?.("Broken Pipe", 7, "Common", 0, 1, 10);
+createNewItemKrin?.("Broken Pipe", 7, "Modded", 0, 1, 500);
 $$o(gghhjjuu).looks = "PIPE";
 allClearKrinItem?.();
 $$o(Krin).StrengthUP = 6;
